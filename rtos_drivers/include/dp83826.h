@@ -34,14 +34,14 @@
  * \file  dp83826.h
  *
  * \brief This file contains the type definitions and helper macros for the
- *        dp83826 Ethernet PHY.
+ *        DP83826 Ethernet PHY.
  */
 
 /*!
  * \ingroup  DRV_ENETPHY
- * \defgroup ENETPHY_dp83826 TI dp83826 PHY
+ * \defgroup ENETPHY_DP83826 TI DP83826 PHY
  *
- * TI dp83826 RMII Ethernet PHY.
+ * TI DP83826 RMII Ethernet PHY.
  *
  * @{
  */

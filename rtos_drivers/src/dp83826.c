@@ -275,16 +275,16 @@ static void Dp83826_rmwExtReg(EthPhyDrv_Handle hPhy,
     PHYTRACE_VERBOSE("PHY %u: write reg %u mask 0x%04x val 0x%04x\r\n",
                       PhyPriv_getPhyAddr(hPhy), reg, mask, val);
 
-    pRegAccessApi->EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_ADDR);
-    pRegAccessApi->EnetPhy_writeReg(hPhy, PHY_MMD_DR, reg);
-    pRegAccessApi->EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
-    status = pRegAccessApi->EnetPhy_readReg(hPhy, PHY_MMD_DR, &data);
+    pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_ADDR);
+    pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, reg);
+    pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+    status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, PHY_MMD_DR, &data);
 
 
     if (status == PHY_SOK)
     {
         data = (data & ~mask) | (val & mask);
-        pRegAccessApi->EnetPhy_writeReg(hPhy, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
-        pRegAccessApi->EnetPhy_writeReg(hPhy, PHY_MMD_DR, data);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, data);
     }
 }

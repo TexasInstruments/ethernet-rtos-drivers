@@ -32,7 +32,7 @@
 
 /*!
  * \ingroup DRV_ENETPHY
- * \defgroup PHY_COMMON_H TI ENET PHY
+ * \defgroup PHY_COMMON_H TI PHY COMMON
  *
  * TI PHY COMMON for Ethernet PHY.
  *
@@ -283,7 +283,7 @@ typedef struct
         /*!
          * \brief PHY bind.
          *
-         * PHY-specific function that binds the driver handle adnd register 
+         * PHY-specific function that binds the driver handle and register 
          * access functions to specific PHY device.
          *
          * \param hPhy              PHY device handle

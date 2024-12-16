@@ -119,11 +119,11 @@ typedef struct Dp83tg720_Cfg_s
 /* ========================================================================== */
 
 /*!
- * \brief Initialize DP83TC811 PHY specific config params.
+ * \brief Initialize DP83TG720 PHY specific config params.
  *
- * Initializes the DP83TC811 PHY specific configuration parameters.
+ * Initializes the DP83TG720 PHY specific configuration parameters.
  *
- * \param cfg       DP83TC811 PHY config structure pointer
+ * \param cfg       DP83TG720 PHY config structure pointer
  */
 void Dp83tg720_initCfg(Dp83tg720_Cfg *cfg);
 
