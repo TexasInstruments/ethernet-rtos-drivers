@@ -148,13 +148,13 @@ bool Dp83826_isMacModeSupported(EthPhyDrv_Handle hPhy,
 
     switch (mii)
     {
+        case PHY_MAC_MII_MII:
         case PHY_MAC_MII_RMII:
             supported = true;
             break;
 
-        /* This driver doesn't support MII and RGMII interfaces,
+        /* This driver doesn't support RGMII interfaces,
          * but the dp83826 PHY does support them */
-        case PHY_MAC_MII_MII:
         case PHY_MAC_MII_RGMII:
         default:
             supported = false;
@@ -194,9 +194,16 @@ int32_t Dp83826_config(EthPhyDrv_Handle hPhy,
         Dp83826_enableAutoMdix(hPhy, enableAutoMdix);
     }
 
-    /*Enabled RMII mode*/
-    Dp83826_rmwExtReg(hPhy, Dp83826_RCSR, PHY_BIT(Dp83826_RMII_BIT), PHY_BIT(Dp83826_RMII_BIT));
-
+    if (mii == PHY_MAC_MII_RMII)
+    {
+        /*Enabled RMII mode*/
+        Dp83826_rmwExtReg(hPhy, Dp83826_RCSR, PHY_BIT(Dp83826_RMII_BIT), PHY_BIT(Dp83826_RMII_BIT));
+    }
+    else if (mii == PHY_MAC_MII_MII)
+    {
+        /*Enabled MII mode*/
+        Dp83826_rmwExtReg(hPhy, Dp83826_RCSR, PHY_BIT(Dp83826_RMII_BIT), 0x0);
+    }
     return status;
 }
 
