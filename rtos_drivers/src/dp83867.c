@@ -125,22 +125,24 @@ Phy_DrvObj_t gEnetPhyDrvDp83867 =
         .readExtReg         = GenericPhy_readExtReg,
         .writeExtReg        = GenericPhy_writeExtReg,
         .printRegs          = Dp83867_printRegs,
-    	.adjPtpFreq              = NULL,
-    	.adjPtpPhase             = NULL,
-    	.getPtpTime              = NULL,
-    	.setPtpTime              = NULL,
-    	.getPtpTxTime            = NULL,
-    	.getPtpRxTime            = NULL,
-    	.waitPtpTxTime           = NULL,
-    	.procStatusFrame         = NULL,
-    	.getStatusFrameEthHeader = NULL,
-    	.enablePtp               = NULL,
-    	.tickDriver              = NULL,
-    	.enableEventCapture      = NULL,
-    	.enableTriggerOutput     = NULL,
-    	.getEventTs              = NULL,        
+        .adjPtpFreq              = NULL,
+        .adjPtpPhase             = NULL,
+        .getPtpTime              = NULL,
+        .setPtpTime              = NULL,
+        .getPtpTxTime            = NULL,
+        .getPtpRxTime            = NULL,
+        .waitPtpTxTime           = NULL,
+        .procStatusFrame         = NULL,
+        .getStatusFrameEthHeader = NULL,
+        .enablePtp               = NULL,
+        .tickDriver              = NULL,
+        .enableEventCapture      = NULL,
+        .enableTriggerOutput     = NULL,
+        .getEventTs              = NULL,
+        .configMediaClock        = NULL,
+        .nudgeCodecClock         = NULL,
     }
-}; 
+};
 
 /* ========================================================================== */
 /*                          Function Definitions                              */
@@ -173,7 +175,7 @@ void Dp83867_bind(EthPhyDrv_Handle* hPhy, uint8_t phyAddr, Phy_RegAccessCb_t* pR
 bool Dp83867_isPhyDevSupported(EthPhyDrv_Handle hPhy,
                                 const void *pVersion)
 {
-	const Phy_Version *version = (Phy_Version *)pVersion;
+    const Phy_Version *version = (Phy_Version *)pVersion;
 
     bool supported = false;
 
@@ -215,7 +217,7 @@ bool Dp83867_isMacModeSupported(EthPhyDrv_Handle hPhy,
 int32_t Dp83867_config(EthPhyDrv_Handle hPhy,
                         const void *pExtCfg,
                         const uint32_t extCfgSize,
-                        Phy_Mii mii, 
+                        Phy_Mii mii,
                         bool loopbackEn)
 {
     uint8_t phyAddr = PhyPriv_getPhyAddr(hPhy);

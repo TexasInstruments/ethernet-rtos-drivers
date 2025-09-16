@@ -277,13 +277,13 @@ typedef struct
          *
          * \return Whether MII interface type is supported or not
          */
-        bool (*isMacModeSupported)(EthPhyDrv_Handle hPhy, 
+        bool (*isMacModeSupported)(EthPhyDrv_Handle hPhy,
                                     Phy_Mii mii);
 
         /*!
          * \brief PHY bind.
          *
-         * PHY-specific function that binds the driver handle and register 
+         * PHY-specific function that binds the driver handle and register
          * access functions to specific PHY device.
          *
          * \param hPhy              PHY device handle
@@ -311,7 +311,7 @@ typedef struct
         int32_t (*config)(EthPhyDrv_Handle hPhy,
                             const void *pExtCfg,
                             const uint32_t extCfgSize,
-                            Phy_Mii mii, 
+                            Phy_Mii mii,
                             bool loopbackEn);
 
         /*!
@@ -612,6 +612,31 @@ typedef struct
          */
         int32_t (*getEventTs)(EthPhyDrv_Handle hPhy, uint32_t *eventIdx,
                     uint32_t *seqId, uint64_t *ts64);
+        /*!
+         * \brief config Media Clock
+         *
+         * config Media Clock
+         *
+         * \param hPhy       PHY device handle
+         * \param isMaster   Media Clock Master/Slave Mode
+         * \param enTrigOut  If true, starts 100Hz phase aligned signal
+         *                   to the media clock at LED0
+         *
+         * \return \ref EnetPhy_ErrorCodes
+         */
+        int32_t (*configMediaClock)(EthPhyDrv_Handle hPhy, bool isMaster,
+            uint8_t *streamIDMatchValue, bool enTrigOut);
+        /*!
+         * \brief Nudge Codec Clock
+         *
+         * Nudge Codec Clock
+         *
+         * \param hPhy         PHY device handle
+         * \param NudgeValue   int8_t value to nudge Codec clock.
+         *
+         * \return \ref EnetPhy_ErrorCodes
+         */
+        int32_t (*nudgeCodecClock)(EthPhyDrv_Handle hPhy, int8_t nudgeValue);
     } fxn;
 
     EthPhyDrv_Handle hDrv;
@@ -641,7 +666,7 @@ int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
 
 int32_t GenericPhy_writeExtReg(EthPhyDrv_Handle hPhy,
                                 uint32_t reg,
-                                uint16_t val);  
+                                uint16_t val);
 
 void GenericPhy_reset(EthPhyDrv_Handle hPhy);
 

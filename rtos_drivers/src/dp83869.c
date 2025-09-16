@@ -126,22 +126,24 @@ Phy_DrvObj_t gEnetPhyDrvDp83869 =
         .readExtReg         = GenericPhy_readExtReg,
         .writeExtReg        = GenericPhy_writeExtReg,
         .printRegs          = Dp83869_printRegs,
-    	.adjPtpFreq              = NULL,
-    	.adjPtpPhase             = NULL,
-    	.getPtpTime              = NULL,
-    	.setPtpTime              = NULL,
-    	.getPtpTxTime            = NULL,
-    	.getPtpRxTime            = NULL,
-    	.waitPtpTxTime           = NULL,
-    	.procStatusFrame         = NULL,
-    	.getStatusFrameEthHeader = NULL,
-    	.enablePtp               = NULL,
-    	.tickDriver              = NULL,
-    	.enableEventCapture      = NULL,
-    	.enableTriggerOutput     = NULL,
-    	.getEventTs              = NULL,        
+        .adjPtpFreq              = NULL,
+        .adjPtpPhase             = NULL,
+        .getPtpTime              = NULL,
+        .setPtpTime              = NULL,
+        .getPtpTxTime            = NULL,
+        .getPtpRxTime            = NULL,
+        .waitPtpTxTime           = NULL,
+        .procStatusFrame         = NULL,
+        .getStatusFrameEthHeader = NULL,
+        .enablePtp               = NULL,
+        .tickDriver              = NULL,
+        .enableEventCapture      = NULL,
+        .enableTriggerOutput     = NULL,
+        .getEventTs              = NULL,
+        .configMediaClock        = NULL,
+        .nudgeCodecClock         = NULL,
     }
-}; 
+};
 
 /* ========================================================================== */
 /*                          Function Definitions                              */
@@ -164,9 +166,9 @@ void Dp83869_initCfg(Dp83869_Cfg *cfg)
     cfg->ledMode[3]           = DP83869_LED_LINKED_100BTX;
 }
 
-void Dp83869_bind(EthPhyDrv_Handle* hPhy, 
-					uint8_t phyAddr, 
-					Phy_RegAccessCb_t* pRegAccessCb)
+void Dp83869_bind(EthPhyDrv_Handle* hPhy,
+                    uint8_t phyAddr,
+                    Phy_RegAccessCb_t* pRegAccessCb)
 {
     Phy_Obj_t* pObj = (Phy_Obj_t*) hPhy;
     pObj->phyAddr = phyAddr;
@@ -174,9 +176,9 @@ void Dp83869_bind(EthPhyDrv_Handle* hPhy,
 }
 
 bool Dp83869_isPhyDevSupported(EthPhyDrv_Handle hPhy,
-        						const void *pVersion)
+                                const void *pVersion)
 {
-	const Phy_Version *version = (Phy_Version *)pVersion;
+    const Phy_Version *version = (Phy_Version *)pVersion;
 
     bool supported = false;
 
@@ -194,10 +196,10 @@ bool Dp83869_isPhyDevSupported(EthPhyDrv_Handle hPhy,
     return supported;
 }
 
-bool Dp83869_isMacModeSupported(EthPhyDrv_Handle hPhy, 
-								Phy_Mii mii)
+bool Dp83869_isMacModeSupported(EthPhyDrv_Handle hPhy,
+                                Phy_Mii mii)
 {
-	bool supported;
+    bool supported;
 
     switch (mii)
     {
@@ -218,7 +220,7 @@ bool Dp83869_isMacModeSupported(EthPhyDrv_Handle hPhy,
 int32_t Dp83869_config(EthPhyDrv_Handle hPhy,
                         const void *pExtCfg,
                         const uint32_t extCfgSize,
-                        Phy_Mii mii, 
+                        Phy_Mii mii,
                         bool loopbackEn)
 {
     uint8_t phyAddr = PhyPriv_getPhyAddr(hPhy);
@@ -413,7 +415,7 @@ static void Dp83869_enableAutoMdix(EthPhyDrv_Handle hPhy,
     }
 
     PHYTRACE_DBG("PHY %u: %s automatic cross-over\n",
-    			   PhyPriv_getPhyAddr(hPhy), enable ? "enable" : "disable");
+                   PhyPriv_getPhyAddr(hPhy), enable ? "enable" : "disable");
                    pRegAccessApi->EnetPhy_rmwReg(pRegAccessApi->pArgs, DP83869_PHYCR,
                    PHYCR_MDICROSSOVER_MASK,
                    val);

@@ -84,23 +84,25 @@ Phy_DrvObj_t gEnetPhyDrvDp83822 =
         .readExtReg         = GenericPhy_readExtReg,
         .writeExtReg        = GenericPhy_writeExtReg,
         .printRegs          = Dp83822_printRegs,
-    	.adjPtpFreq              = NULL,
-    	.adjPtpPhase             = NULL,
-    	.getPtpTime              = NULL,
-    	.setPtpTime              = NULL,
-    	.getPtpTxTime            = NULL,
-    	.getPtpRxTime            = NULL,
-    	.waitPtpTxTime           = NULL,
-    	.procStatusFrame         = NULL,
-    	.getStatusFrameEthHeader = NULL,
-    	.enablePtp               = NULL,
-    	.tickDriver              = NULL,
-    	.enableEventCapture      = NULL,
-    	.enableTriggerOutput     = NULL,
-    	.getEventTs              = NULL,        
+        .adjPtpFreq              = NULL,
+        .adjPtpPhase             = NULL,
+        .getPtpTime              = NULL,
+        .setPtpTime              = NULL,
+        .getPtpTxTime            = NULL,
+        .getPtpRxTime            = NULL,
+        .waitPtpTxTime           = NULL,
+        .procStatusFrame         = NULL,
+        .getStatusFrameEthHeader = NULL,
+        .enablePtp               = NULL,
+        .tickDriver              = NULL,
+        .enableEventCapture      = NULL,
+        .enableTriggerOutput     = NULL,
+        .getEventTs              = NULL,
+        .configMediaClock        = NULL,
+        .nudgeCodecClock         = NULL,
     }
 };
- 
+
 /* ========================================================================== */
 /*                          Function Definitions                              */
 /* ========================================================================== */
@@ -110,8 +112,8 @@ void Dp83822_initCfg(Dp83822_Cfg *cfg)
     /* No extended config parameters at the moment */
 }
 
-void Dp83822_bind(EthPhyDrv_Handle* hPhy, 
-                    uint8_t phyAddr, 
+void Dp83822_bind(EthPhyDrv_Handle* hPhy,
+                    uint8_t phyAddr,
                     Phy_RegAccessCb_t* pRegAccessCb)
 {
     Phy_Obj_t* pObj = (Phy_Obj_t*) hPhy;
@@ -122,7 +124,7 @@ void Dp83822_bind(EthPhyDrv_Handle* hPhy,
 bool Dp83822_isPhyDevSupported(EthPhyDrv_Handle hPhy,
                                 const void *pVersion)
 {
-	const Phy_Version *version = (Phy_Version *)pVersion;
+    const Phy_Version *version = (Phy_Version *)pVersion;
 
     bool supported = false;
 
@@ -162,7 +164,7 @@ bool Dp83822_isMacModeSupported(EthPhyDrv_Handle hPhy,
 int32_t Dp83822_config(EthPhyDrv_Handle hPhy,
                         const void *pExtCfg,
                         const uint32_t extCfgSize,
-                        Phy_Mii mii, 
+                        Phy_Mii mii,
                         bool loopbackEn)
 {
     uint8_t phyAddr = PhyPriv_getPhyAddr(hPhy);
@@ -196,10 +198,10 @@ static void Dp83822_enableAutoMdix(EthPhyDrv_Handle hPhy,
                                    bool enable)
 {
     Phy_RegAccessCb_t* pRegAccessApi = PhyPriv_getRegAccessApi(hPhy);
-	
+
     PHYTRACE_DBG("PHY %u: %s automatic cross-over\n",
                  PhyPriv_getPhyAddr(hPhy), enable ? "enable" : "disable");
-    			 pRegAccessApi->EnetPhy_rmwReg(pRegAccessApi->pArgs, DP83822_PHYCR,
+                 pRegAccessApi->EnetPhy_rmwReg(pRegAccessApi->pArgs, DP83822_PHYCR,
                  PHYCR_AUTOMDIX_ENABLE,
                  enable ? PHYCR_AUTOMDIX_ENABLE : 0);
 
@@ -221,8 +223,8 @@ static void Dp83822_enableAutoMdix(EthPhyDrv_Handle hPhy,
 void Dp83822_printRegs(EthPhyDrv_Handle hPhy)
 {
     uint16_t val;
-	
-	const uint8_t phyAddr = PhyPriv_getPhyAddr(hPhy);
+
+    const uint8_t phyAddr = PhyPriv_getPhyAddr(hPhy);
     Phy_RegAccessCb_t* pRegAccessApi = PhyPriv_getRegAccessApi(hPhy);
 
     pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, PHY_BMCR, &val);
