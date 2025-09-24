@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2021-2024
+ *  Copyright (c) Texas Instruments Incorporated 2021-2025
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -103,6 +103,9 @@ static void Dp83tc812_configClkShift(EthPhyDrv_Handle hPhy, bool txClkShiftEn, b
 
 static void Dp83tc812_configIntr(EthPhyDrv_Handle hPhy, bool intrEn);
 
+static int32_t Dp83tc812_getSpeedDuplex (EthPhyDrv_Handle hPhy,
+                                       uint32_t *pConfig);
+
 /* ========================================================================== */
 /*                            Global Variables                                */
 /* ========================================================================== */
@@ -137,6 +140,8 @@ Phy_DrvObj_t gEnetPhyDrvDp83tc812 =
         .getEventTs              = NULL,
         .configMediaClock        = NULL,
         .nudgeCodecClock         = NULL,
+        .getSpeedDuplex          = Dp83tc812_getSpeedDuplex,
+
     }
 };
 
@@ -765,4 +770,27 @@ void Dp83tc812_printRegs(EthPhyDrv_Handle hPhy)
     printf("PHY %u: RGMII_ID_CTRL   = 0x%04x\r\n",phyAddr, val);
     Dp83tc812_readMmd(hPhy, DP83TC812_DEVADDR_MMD1, DP83TC812_MMD1_PMA_CTRL_2, &val);
     printf("PHY %u: MMD1_PMA_CTRL_2 = 0x%04x\r\n",phyAddr, val);
+}
+
+int32_t Dp83tc812_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
+{
+    int32_t  status;
+    uint32_t speed;
+    uint16_t tmp;
+    uint16_t val;
+
+    Phy_RegAccessCb_t* pRegAccessApi = PhyPriv_getRegAccessApi(hPhy);
+
+    /* Restart is complete when RESET bit has self-cleared */
+    status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, DP83TC812_PHYSTS, &val);
+    if (status == PHY_SOK)
+    {
+        *pConfig = PHY_LINK_FD100;
+    }
+
+    PHYTRACE_DBG("PHY %u: selected speed is %d Mbps with %s-duplex\n", PhyPriv_getPhyAddr(hPhy), speed, (val & PHYST_DUPLEXMODEENV_FD) ? "full" : "half");
+
+    (void)speed;
+
+    return status;
 }

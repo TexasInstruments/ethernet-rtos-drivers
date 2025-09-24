@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2020
+ *  Copyright (c) Texas Instruments Incorporated 2020 - 2025
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -66,6 +66,9 @@ static void Dp83826_rmwExtReg(EthPhyDrv_Handle hPhy,
                               uint16_t mask,
                               uint16_t val);
 
+static int32_t Dp83826_getSpeedDuplex (EthPhyDrv_Handle hPhy,
+                                       uint32_t *pConfig);                              
+
 /* ========================================================================== */
 /*                          Function Declarations                             */
 /* ========================================================================== */
@@ -106,6 +109,8 @@ Phy_DrvObj_t gEnetPhyDrvDp83826 =
         .getEventTs              = NULL,
         .configMediaClock        = NULL,
         .nudgeCodecClock         = NULL,
+        .getSpeedDuplex          = Dp83826_getSpeedDuplex,
+
     }
 };
 
@@ -296,4 +301,54 @@ static void Dp83826_rmwExtReg(EthPhyDrv_Handle hPhy,
         pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
         pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, data);
     }
+}
+
+int32_t Dp83826_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
+{
+    int32_t  status;
+    uint32_t speed;
+    uint16_t tmp;
+    uint16_t val;
+
+    Phy_RegAccessCb_t* pRegAccessApi = PhyPriv_getRegAccessApi(hPhy);
+
+    /* Restart is complete when RESET bit has self-cleared */
+    status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, DP83826_PHYSTS, &val);
+    if (status == PHY_SOK)
+    {
+        tmp = (val & PHYST_SPEEDSEL_MASK);
+
+        switch(tmp)
+        {
+            case PHYST_SPEEDSEL_10_MBPS:
+                speed = 10;
+
+                *pConfig = PHY_LINK_HD10;
+                if (val & PHYST_DUPLEXMODEENV_FD)
+                {
+                    *pConfig = PHY_LINK_FD10;
+                }
+                break;
+            case PHYST_SPEEDSEL_100_MBPS:
+                speed = 100;
+
+                *pConfig = PHY_LINK_HD100;
+                if (val & PHYST_DUPLEXMODEENV_FD)
+                {
+                    *pConfig = PHY_LINK_FD100;
+                }
+                break;
+            default:
+                speed = 0;
+
+                *pConfig = PHY_LINK_INVALID;
+                break;
+        }
+    }
+
+    PHYTRACE_DBG("PHY %u: selected speed is %d Mbps with %s-duplex\n", PhyPriv_getPhyAddr(hPhy), speed, (val & PHYST_DUPLEXMODEENV_FD) ? "full" : "half");
+
+    (void)speed;
+
+    return status;
 }

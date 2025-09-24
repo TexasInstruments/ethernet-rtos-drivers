@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) Texas Instruments Incorporated 2021
+ *  Copyright (c) Texas Instruments Incorporated 2021-2025
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -160,6 +160,9 @@ extern "C" {
 #define ANLPAR_100                            (ANLPAR_100FD | ANLPAR_100HD)
 #define ANLPAR_10                             (ANLPAR_10FD | ANLPAR_10HD)
 
+/* ANER register definitions */
+#define ANER_LPISANABLE                       PHY_BIT(0)
+
 /* GIGCR register definitions */
 #define GIGCR_MASTERCFG                       PHY_BIT(12)
 #define GIGCR_MASTEREN                        PHY_BIT(11)
@@ -205,6 +208,14 @@ void GenericPhy_reset(EthPhyDrv_Handle hPhy);
 
 bool GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy);
 
+int32_t GenericPhy_readReg(EthPhyDrv_Handle hPhy,
+                           uint32_t reg,
+                           uint16_t *pVal);
+
+int32_t GenericPhy_writeReg(EthPhyDrv_Handle hPhy,
+                            uint32_t reg,
+                            uint16_t val);
+
 int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
                                 uint32_t reg,
                                 uint16_t* val);
@@ -214,6 +225,43 @@ int32_t GenericPhy_writeExtReg(EthPhyDrv_Handle hPhy,
                                 uint16_t val);
 
 void GenericPhy_printRegs(EthPhyDrv_Handle hPhy);
+
+int32_t GenericPhy_ctrlPowerDown(EthPhyDrv_Handle hPhy,
+                                 bool control);
+
+int32_t GenericPhy_isPowerDownActive(EthPhyDrv_Handle hPhy,
+                                     bool *pActive);
+
+int32_t GenericPhy_enableAdvertisement(EthPhyDrv_Handle hPhy,
+                                       uint32_t advertisement);
+
+int32_t GenericPhy_disableAdvertisement(EthPhyDrv_Handle hPhy,
+                                        uint32_t advertisement);
+
+int32_t GenericPhy_ctrlAutoNegotiation(EthPhyDrv_Handle hPhy,
+                                       uint32_t control);
+
+int32_t GenericPhy_isLinkPartnerAutoNegotiationAble(EthPhyDrv_Handle hPhy,
+                                                    bool *pAble);
+
+int32_t GenericPhy_isAutoNegotiationEnabled(EthPhyDrv_Handle hPhy,
+                                            bool *pEnabled);
+
+int32_t GenericPhy_isAutoNegotiationComplete(EthPhyDrv_Handle hPhy,
+                                             bool *pCompleted);
+
+int32_t GenericPhy_isAutoNegotiationRestartComplete(EthPhyDrv_Handle hPhy,
+                                                    bool *pCompleted);
+
+int32_t GenericPhy_setSpeedDuplex(EthPhyDrv_Handle hPhy,
+                                  uint32_t settings);
+
+int32_t GenericPhy_isLinkUp(EthPhyDrv_Handle hPhy,
+                            bool *pLinkUp);
+
+int32_t GenericPhy_getId(EthPhyDrv_Handle hPhy,
+                         uint32_t *pId);
+
 /* ========================================================================== */
 /*                        Deprecated Function Declarations                    */
 /* ========================================================================== */
@@ -230,6 +278,6 @@ void GenericPhy_printRegs(EthPhyDrv_Handle hPhy);
 }
 #endif
 
-#endif /* DP83869_H_ */
+#endif /* GENERIC_PHY_H_ */
 
 /*! @} */
