@@ -112,7 +112,7 @@ static int32_t Dp83869_isRestartComplete (EthPhyDrv_Handle hPhy,
                                           bool *pCompleted);
 
 static int32_t Dp83869_getSpeedDuplex (EthPhyDrv_Handle hPhy,
-                                       uint32_t *pConfig);
+                                       Phy_Link_SpeedDuplex* pConfig);
 
 static int32_t Dp83869_enableAdvertisement (EthPhyDrv_Handle hPhy,
                                             uint32_t advertisement);
@@ -138,8 +138,8 @@ Phy_DrvObj_t gEnetPhyDrvDp83869 =
         .config                           = Dp83869_config,
         .reset                            = Dp83869_reset,
         .isResetComplete                  = Dp83869_isResetComplete,
-        .readReg                          = GenericPhy_readReg,
-        .writeReg                         = GenericPhy_writeReg,
+        .readReg                          = NULL,
+        .writeReg                         = NULL,
         .readExtReg                       = GenericPhy_readExtReg,
         .writeExtReg                      = GenericPhy_writeExtReg,
         .printRegs                        = Dp83869_printRegs,
@@ -161,16 +161,16 @@ Phy_DrvObj_t gEnetPhyDrvDp83869 =
         .nudgeCodecClock                  = NULL,
         .restart                          = Dp83869_restart,
         .isRestartComplete                = Dp83869_isRestartComplete,
-        .getId                            = GenericPhy_getId,
-        .isLinkUp                         = GenericPhy_isLinkUp,
-        .isPowerDownActive                = GenericPhy_isPowerDownActive,
-        .ctrlPowerDown                    = GenericPhy_ctrlPowerDown,
-        .ctrlAutoNegotiation              = GenericPhy_ctrlAutoNegotiation,
-        .isLinkPartnerAutoNegotiationAble = GenericPhy_isLinkPartnerAutoNegotiationAble,
-        .isAutoNegotiationEnabled         = GenericPhy_isAutoNegotiationEnabled,
-        .isAutoNegotiationComplete        = GenericPhy_isAutoNegotiationComplete,
-        .isAutoNegotiationRestartComplete = GenericPhy_isAutoNegotiationRestartComplete,
-        .setSpeedDuplex                   = GenericPhy_setSpeedDuplex,
+        .getId                            = NULL,
+        .isLinkUp                         = NULL,
+        .isPowerDownActive                = NULL,
+        .ctrlPowerDown                    = NULL,
+        .ctrlAutoNegotiation              = NULL,
+        .isLinkPartnerAutoNegotiationAble = NULL,
+        .isAutoNegotiationEnabled         = NULL,
+        .isAutoNegotiationComplete        = NULL,
+        .isAutoNegotiationRestartComplete = NULL,
+        .setSpeedDuplex                   = NULL,
         .getSpeedDuplex                   = Dp83869_getSpeedDuplex,
         .enableAdvertisement              = Dp83869_enableAdvertisement,
         .disableAdvertisement             = Dp83869_disableAdvertisement,
@@ -782,7 +782,7 @@ int32_t Dp83869_isRestartComplete (EthPhyDrv_Handle hPhy, bool *pCompleted)
     return status;
 }
 
-int32_t Dp83869_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
+int32_t Dp83869_getSpeedDuplex (EthPhyDrv_Handle hPhy, Phy_Link_SpeedDuplex* pConfig)
 {
     int32_t  status;
     uint32_t speed;
@@ -795,42 +795,49 @@ int32_t Dp83869_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
     status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, DP83869_PHYSTS, &val);
     if (status == PHY_SOK)
     {
-        tmp = (val & PHYST_SPEEDSEL_MASK);
-
-        switch(tmp)
+        if (val & DP83869_PHYSTS_LINK)
         {
-            case PHYST_SPEEDSEL_10_MBPS:
-                speed = 10;
+            tmp = (val & PHYST_SPEEDSEL_MASK);
 
-                *pConfig = PHY_LINK_HD10;
-                if (val & PHYST_DUPLEXMODEENV_FD)
-                {
-                    *pConfig = PHY_LINK_FD10;
-                }
-                break;
-            case PHYST_SPEEDSEL_100_MBPS:
-                speed = 100;
+            switch(tmp)
+            {
+                case PHYST_SPEEDSEL_10_MBPS:
+                    speed = 10;
 
-                *pConfig = PHY_LINK_HD100;
-                if (val & PHYST_DUPLEXMODEENV_FD)
-                {
-                    *pConfig = PHY_LINK_FD100;
-                }
-                break;
-            case PHYST_SPEEDSEL_1000_MBPS:
-                speed = 1000;
+                    *pConfig = PHY_LINK_HD10;
+                    if (val & PHYST_DUPLEXMODEENV_FD)
+                    {
+                        *pConfig = PHY_LINK_FD10;
+                    }
+                    break;
+                case PHYST_SPEEDSEL_100_MBPS:
+                    speed = 100;
 
-                *pConfig = PHY_LINK_HD1000;
-                if (val & PHYST_DUPLEXMODEENV_FD)
-                {
-                    *pConfig = PHY_LINK_FD1000;
-                }
-                break;
-            default:
-                speed = 0;
+                    *pConfig = PHY_LINK_HD100;
+                    if (val & PHYST_DUPLEXMODEENV_FD)
+                    {
+                        *pConfig = PHY_LINK_FD100;
+                    }
+                    break;
+                case PHYST_SPEEDSEL_1000_MBPS:
+                    speed = 1000;
 
-                *pConfig = PHY_LINK_INVALID;
-                break;
+                    *pConfig = PHY_LINK_HD1000;
+                    if (val & PHYST_DUPLEXMODEENV_FD)
+                    {
+                        *pConfig = PHY_LINK_FD1000;
+                    }
+                    break;
+                default:
+                    speed = 0;
+
+                    *pConfig = PHY_LINK_INVALID;
+                    break;
+            }
+        }
+        else
+        {
+            *pConfig = PHY_LINK_INVALID;
         }
     }
 

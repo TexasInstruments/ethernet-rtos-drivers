@@ -253,6 +253,10 @@ extern "C" {
 /* OPMODE DECODE register definitions */
 #define OP_MODE_DECODE_RGMII_MII_SEL          PHY_BIT(5)
 
+/*! \brief PHY STS bits */
+#define DP83869_PHYSTS_LINK	    PHY_BIT(10)
+
+
 /* ========================================================================== */
 /*                         Structures and Enums                               */
 /* ========================================================================== */

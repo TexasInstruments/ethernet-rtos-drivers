@@ -225,6 +225,9 @@ extern "C" {
 #define GPIOMUXCTRL_GPIO0_MASK                (0x000FU)
 #define GPIOMUXCTRL_GPIO0_OFFSET              (0U)
 
+/*! \brief PHY STS bits */
+#define DP83867_PHYSTS_LINK	    PHY_BIT(10)
+
 /* ========================================================================== */
 /*                         Structures and Enums                               */
 /* ========================================================================== */

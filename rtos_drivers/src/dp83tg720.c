@@ -101,7 +101,7 @@ static void Dp83tg720_configClkShift(EthPhyDrv_Handle hPhy, bool txClkShiftEn, b
 static void Dp83tg720_configIntr(EthPhyDrv_Handle hPhy, bool intrEn);
 
 static int32_t Dp83tg720_getSpeedDuplex (EthPhyDrv_Handle hPhy,
-                                       uint32_t *pConfig);
+                                       Phy_Link_SpeedDuplex* pConfig); 
 
 /* ========================================================================== */
 /*                            Global Variables                                */
@@ -740,22 +740,29 @@ void Dp83tg720_printRegs(EthPhyDrv_Handle hPhy)
     printf("PHY %u: MMD1_PMA_PMD_CONTROL = 0x%04x\r\n",phyAddr, val);
 }
 
-int32_t Dp83tg720_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
+int32_t Dp83tg720_getSpeedDuplex (EthPhyDrv_Handle hPhy, Phy_Link_SpeedDuplex* pConfig)
 {
     int32_t  status;
     uint32_t speed;
-    uint16_t tmp;
     uint16_t val;
 
     Phy_RegAccessCb_t* pRegAccessApi = PhyPriv_getRegAccessApi(hPhy);
 
     /* Restart is complete when RESET bit has self-cleared */
     status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, DP83TG720_PHYSTS, &val);
+
     if (status == PHY_SOK)
     {
-        *pConfig = PHY_LINK_FD1000;
+        if (val & DP83TG720_PHYSTS_LINK)
+        {
+            speed = 1000;
+            *pConfig = PHY_LINK_FD1000;
+        } else 
+        {
+            *pConfig = PHY_LINK_INVALID;
+        }
+        
     }
-
     PHYTRACE_DBG("PHY %u: selected speed is %d Mbps with %s-duplex\n", PhyPriv_getPhyAddr(hPhy), speed, (val & PHYST_DUPLEXMODEENV_FD) ? "full" : "half");
 
     (void)speed;

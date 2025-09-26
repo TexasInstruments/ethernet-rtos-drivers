@@ -85,6 +85,9 @@ extern "C" {
 #define PHYST_SPEEDSEL_10_MBPS                (0x0002U)
 #define PHYST_DUPLEXMODEENV_FD                (0x0004U)
 
+/*! \brief PHY STS bits */
+#define DP83826_PHYSTS_LINK	PHY_BIT(0)
+
 /* ========================================================================== */
 /*                         Structures and Enums                               */
 /* ========================================================================== */

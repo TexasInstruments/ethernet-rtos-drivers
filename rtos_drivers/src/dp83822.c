@@ -61,7 +61,7 @@ static void Dp83822_enableAutoMdix(EthPhyDrv_Handle hPhy,
                                    bool enable);
 
 static int32_t Dp83822_getSpeedDuplex (EthPhyDrv_Handle hPhy,
-                                       uint32_t *pConfig);
+                                       Phy_Link_SpeedDuplex* pConfig);
 
 /* ========================================================================== */
 /*                          Function Declarations                             */
@@ -260,7 +260,7 @@ void Dp83822_printRegs(EthPhyDrv_Handle hPhy)
     printf("PHY %u: PHYCR   = 0x%04x\r\n",phyAddr, val);
 }
 
-int32_t Dp83822_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
+int32_t Dp83822_getSpeedDuplex (EthPhyDrv_Handle hPhy, Phy_Link_SpeedDuplex* pConfig)
 {
     int32_t  status;
     uint32_t speed;
@@ -273,33 +273,40 @@ int32_t Dp83822_getSpeedDuplex (EthPhyDrv_Handle hPhy, uint32_t *pConfig)
     status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, DP83822_PHYSTS, &val);
     if (status == PHY_SOK)
     {
-        tmp = (val & PHYST_SPEEDSEL_MASK);
-
-        switch(tmp)
+        if (val & DP83822_PHYSTS_LINK)
         {
-            case PHYST_SPEEDSEL_10_MBPS:
-                speed = 10;
+            tmp = (val & PHYST_SPEEDSEL_MASK);
 
-                *pConfig = PHY_LINK_HD10;
-                if (val & PHYST_DUPLEXMODEENV_FD)
-                {
-                    *pConfig = PHY_LINK_FD10;
-                }
-                break;
-            case PHYST_SPEEDSEL_100_MBPS:
-                speed = 100;
+            switch(tmp)
+            {
+                case PHYST_SPEEDSEL_10_MBPS:
+                    speed = 10;
 
-                *pConfig = PHY_LINK_HD100;
-                if (val & PHYST_DUPLEXMODEENV_FD)
-                {
-                    *pConfig = PHY_LINK_FD100;
-                }
-                break;
-            default:
-                speed = 0;
+                    *pConfig = PHY_LINK_HD10;
+                    if (val & PHYST_DUPLEXMODEENV_FD)
+                    {
+                        *pConfig = PHY_LINK_FD10;
+                    }
+                    break;
+                case PHYST_SPEEDSEL_100_MBPS:
+                    speed = 100;
 
-                *pConfig = PHY_LINK_INVALID;
-                break;
+                    *pConfig = PHY_LINK_HD100;
+                    if (val & PHYST_DUPLEXMODEENV_FD)
+                    {
+                        *pConfig = PHY_LINK_FD100;
+                    }
+                    break;
+                default:
+                    speed = 0;
+
+                    *pConfig = PHY_LINK_INVALID;
+                    break;
+            }
+        }
+        else 
+        {
+            *pConfig = PHY_LINK_INVALID;
         }
     }
 

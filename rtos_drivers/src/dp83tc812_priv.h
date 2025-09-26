@@ -131,6 +131,9 @@ extern "C" {
 #define DP83TC812_RX_CLK_SHIFT    PHY_BIT(1)
 #define DP83TC812_TX_CLK_SHIFT    PHY_BIT(0)
 
+/*! \brief PHY STS bits */
+#define DP83TC812_PHYSTS_LINK	PHY_BIT(0)
+
 
 /* ========================================================================== */
 /*                         Structures and Enums                               */
