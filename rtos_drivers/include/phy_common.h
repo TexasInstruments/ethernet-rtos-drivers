@@ -962,7 +962,7 @@ typedef struct
          *
          * \return \ref EnetPhy_ErrorCodes
          */
-        int32_t (*getSpeedDuplex)(EthPhyDrv_Handle hPhy, uint32_t* pConfig);
+        int32_t (*getSpeedDuplex)(EthPhyDrv_Handle hPhy, Phy_Link_SpeedDuplex* pConfig);
 
         /*!
          * \brief Configures MII mode
