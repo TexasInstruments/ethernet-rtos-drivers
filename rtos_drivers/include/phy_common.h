@@ -944,7 +944,7 @@ typedef struct
          *
          * \param hPhy           PHY device handle
          * \param settings       Contains speed/duplex combination flag to select.
-         *                       \ref Phy_Link_SpeedDuplex_e
+         *                       \ref Phy_Link_SpeedDuplex
          *
          * \return \ref EnetPhy_ErrorCodes
          */
@@ -958,7 +958,7 @@ typedef struct
          *
          * \param hPhy           PHY device handle
          * \param pConfig        Contains speed/duplex combination used for actual
-         *                       connection. See \ref Phy_Link_SpeedDuplex_e.
+         *                       connection. See \ref Phy_Link_SpeedDuplex.
          *
          * \return \ref EnetPhy_ErrorCodes
          */
@@ -970,7 +970,7 @@ typedef struct
          * Accessing vendor specific or extended registers based on type of PHY to configure MII mode.
          *
          * \param hPhy           PHY device handle
-         * \param mii            MII mode to configure. See \ref Phy_Mii_e.
+         * \param mii            MII mode to configure. See \ref Phy_Mii.
          *
          * \return \ref EnetPhy_ErrorCodes
          */
