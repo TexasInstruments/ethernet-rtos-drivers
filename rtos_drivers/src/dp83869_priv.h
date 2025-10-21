@@ -125,7 +125,7 @@ extern "C" {
 #define DP83869_IOMUXCFG                      (0x170U)
 
 /*! \brief GPIO Mux Control Register (GPIO_MUX_CTRL). RGZ devices only */
-#define DP83869_GPIOMUXCTRL                   (0x172U)
+#define DP83869_GPIOMUXCTRL                   (0x1E0U)
 
 /*! \brief OP Mode decode Register (OP_MODE_DECODE) */
 #define DP83869_OP_MODE_DECODE                (0x1DFU)
