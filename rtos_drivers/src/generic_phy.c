@@ -135,6 +135,7 @@ static bool GenericPhy_isMacModeSupported(EthPhyDrv_Handle hPhy, Phy_Mii mii)
 
 int32_t GenericPhy_reset(EthPhyDrv_Handle hPhy)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     int32_t status = PHY_EFAIL;
 
     if (NULL == hPhy)
@@ -143,7 +144,7 @@ int32_t GenericPhy_reset(EthPhyDrv_Handle hPhy)
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -164,6 +165,7 @@ laError:
 
 int32_t GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy, bool *pCompleted)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     int32_t status = PHY_EFAIL;
     uint16_t val = 0;
 
@@ -176,7 +178,7 @@ int32_t GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy, bool *pCompleted)
 
     *pCompleted = false;
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -193,7 +195,7 @@ int32_t GenericPhy_isResetComplete(EthPhyDrv_Handle hPhy, bool *pCompleted)
         *pCompleted = ((val & BMCR_RESET) == 0U);
     }
 
-    PHYTRACE_DBG("PHY %u: reset is %scomplete\n", ((Phy_Obj_t*) hPhy)->phyAddr, complete ? "" : "not");
+    PHYTRACE_DBG("PHY %u: reset is %scomplete\n", ((Phy_Obj_t*) hPhy)->phyAddr, *pCompleted ? "" : "not");
 
 laError:
 
@@ -209,9 +211,9 @@ int32_t GenericPhy_readReg(EthPhyDrv_Handle hPhy,
 
     status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, reg, pVal);
 
-    PHYTRACE_VERBOSE_IF(status == PHY_SOK,
+    PHYTRACE_VERBOSE_IF(status != PHY_SOK,
                         "PHY %u: failed to read reg %u\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg);
-    PHYTRACE_ERR_IF(status != PHY_SOK,
+    PHYTRACE_ERR_IF(status == PHY_SOK,
                     "PHY %u: read reg %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg, *pVal);
 
     return status;
@@ -238,7 +240,7 @@ int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
 {
     Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
     uint16_t devad = MMD_CR_DEVADDR;
-    int32_t status;
+    int32_t status = PHY_EFAIL;
 
     status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_ADDR);
 
@@ -249,7 +251,7 @@ int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
 
     if (status == PHY_SOK)
     {
-        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
     }
 
     if (status == PHY_SOK)
@@ -257,9 +259,9 @@ int32_t GenericPhy_readExtReg(EthPhyDrv_Handle hPhy,
         status = pRegAccessApi->EnetPhy_readReg(pRegAccessApi->pArgs, PHY_MMD_DR, val);
     }
 
-    PHYTRACE_VERBOSE_IF(status == PHY_SOK,
+    PHYTRACE_VERBOSE_IF(status != PHY_SOK,
                          "PHY %u: failed to read reg %u\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg);
-    PHYTRACE_ERR_IF(status != PHY_SOK,
+    PHYTRACE_ERR_IF(status == PHY_SOK,
                      "PHY %u: read reg %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg, *val);
 
     return status;
@@ -270,25 +272,25 @@ int32_t GenericPhy_writeExtReg(EthPhyDrv_Handle hPhy,
                                 uint16_t val)
 {
     Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
-	uint16_t devad = MMD_CR_DEVADDR;
-    int32_t status;
+    uint16_t devad = MMD_CR_DEVADDR;
+    int32_t status = PHY_EFAIL;
 
     PHYTRACE_VERBOSE("PHY %u: write %u val 0x%04x\n", ((Phy_Obj_t*) hPhy)->phyAddr, reg, val);
 
     status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_ADDR);
     if (status == PHY_SOK)
     {
-        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, reg);
+        status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, reg);
     }
 
     if (status == PHY_SOK)
     {
-        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
+        status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_CR, devad | MMD_CR_DATA_NOPOSTINC);
     }
 
     if (status == PHY_SOK)
     {
-        pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, val);
+        status = pRegAccessApi->EnetPhy_writeReg(pRegAccessApi->pArgs, PHY_MMD_DR, val);
     }
 
     PHYTRACE_ERR_IF(status != PHY_SOK,
@@ -314,6 +316,7 @@ void GenericPhy_printRegs(EthPhyDrv_Handle hPhy)
 int32_t GenericPhy_getId (EthPhyDrv_Handle hPhy,
                           uint32_t* pId)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -324,7 +327,7 @@ int32_t GenericPhy_getId (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -359,6 +362,7 @@ laError:
 int32_t GenericPhy_isPowerDownActive (EthPhyDrv_Handle hPhy,
                                       bool *pActive)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -369,7 +373,7 @@ int32_t GenericPhy_isPowerDownActive (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -400,6 +404,7 @@ laError:
 int32_t GenericPhy_ctrlPowerDown (EthPhyDrv_Handle hPhy,
                                   bool enable)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -409,7 +414,7 @@ int32_t GenericPhy_ctrlPowerDown (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -434,6 +439,7 @@ laError:
 int32_t GenericPhy_getLocalCaps (EthPhyDrv_Handle hPhy,
                                  uint32_t *pCapabilities)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val  = 0U;
     int32_t status = PHY_EFAIL;
 
@@ -443,7 +449,7 @@ int32_t GenericPhy_getLocalCaps (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -510,6 +516,7 @@ int32_t GenericPhy_setAdvertisement (EthPhyDrv_Handle hPhy,
                                      uint32_t capabilities,
                                      uint32_t advertisement)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     uint32_t mask = 0;
     int32_t  status = PHY_EFAIL;
@@ -532,7 +539,7 @@ int32_t GenericPhy_setAdvertisement (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -637,6 +644,7 @@ int32_t GenericPhy_enableAdvertisement (EthPhyDrv_Handle hPhy,
                                         uint32_t capabilities,
                                         uint32_t advertisement)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     uint32_t mask = 0;
     int32_t  status = PHY_EFAIL;
@@ -659,7 +667,7 @@ int32_t GenericPhy_enableAdvertisement (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -761,6 +769,7 @@ int32_t GenericPhy_disableAdvertisement (EthPhyDrv_Handle hPhy,
                                          uint32_t capabilities,
                                          uint32_t advertisement)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint32_t mask = 0;
     int32_t  status = PHY_EFAIL;
 
@@ -782,7 +791,7 @@ int32_t GenericPhy_disableAdvertisement (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -876,6 +885,7 @@ laError:
 int32_t GenericPhy_ctrlAutoNegotiation(EthPhyDrv_Handle hPhy,
                                        uint32_t control)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val  = 0;
     uint16_t mask = 0;
     int32_t  status = PHY_EFAIL;
@@ -886,7 +896,7 @@ int32_t GenericPhy_ctrlAutoNegotiation(EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -938,6 +948,7 @@ laError:
 int32_t GenericPhy_isLinkPartnerAutoNegotiationAble (EthPhyDrv_Handle hPhy,
                                                      bool *pAble)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -948,7 +959,7 @@ int32_t GenericPhy_isLinkPartnerAutoNegotiationAble (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -979,6 +990,7 @@ laError:
 int32_t GenericPhy_isAutoNegotiationEnabled(EthPhyDrv_Handle hPhy,
                                             bool *pEnabled)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -989,7 +1001,7 @@ int32_t GenericPhy_isAutoNegotiationEnabled(EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -1020,6 +1032,7 @@ laError:
 int32_t GenericPhy_isAutoNegotiationComplete (EthPhyDrv_Handle hPhy,
                                               bool *pCompleted)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -1030,7 +1043,7 @@ int32_t GenericPhy_isAutoNegotiationComplete (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -1061,6 +1074,7 @@ laError:
 int32_t GenericPhy_isAutoNegotiationRestartComplete (EthPhyDrv_Handle hPhy,
                                                      bool *pCompleted)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     bool res = false;
     int32_t status = PHY_EFAIL;
@@ -1072,7 +1086,7 @@ int32_t GenericPhy_isAutoNegotiationRestartComplete (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -1104,6 +1118,7 @@ int32_t GenericPhy_setSpeedDuplex (EthPhyDrv_Handle hPhy,
                                    uint32_t capabilities,
                                    uint32_t settings)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     uint16_t mask = 0;
     int32_t status = PHY_EFAIL;
@@ -1114,7 +1129,7 @@ int32_t GenericPhy_setSpeedDuplex (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_rmwReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -1202,6 +1217,7 @@ laError:
 int32_t GenericPhy_isLinkUp (EthPhyDrv_Handle hPhy,
                              bool *pLinkUp)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -1212,7 +1228,7 @@ int32_t GenericPhy_isLinkUp (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
@@ -1254,6 +1270,7 @@ laError:
 int32_t GenericPhy_isGigabitSupported (EthPhyDrv_Handle hPhy,
                                        bool *pSupported)
 {
+    Phy_RegAccessCb_t* pRegAccessApi = NULL;
     uint16_t val = 0;
     int32_t status = PHY_EFAIL;
 
@@ -1264,7 +1281,7 @@ int32_t GenericPhy_isGigabitSupported (EthPhyDrv_Handle hPhy,
         goto laError;
     }
 
-    Phy_RegAccessCb_t* pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
+    pRegAccessApi = &((Phy_Obj_t*) hPhy)->regAccessApi;
 
     if ((NULL == pRegAccessApi->EnetPhy_readReg) ||
         (NULL == pRegAccessApi->pArgs))
